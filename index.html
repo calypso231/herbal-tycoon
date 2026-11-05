@@ -101,6 +101,14 @@ button,canvas{touch-action:manipulation}
 .memo{background:repeating-linear-gradient(0deg,#fbf3dc 0 27px,#d9c9a0 27px 28px);color:#2a2420;border:2px solid #8a6a2f;padding:8px;margin-top:8px;min-height:96px;transform:rotate(-1deg)}
 .op{display:block;width:100%;text-align:left;margin:4px 0;font-size:14px}
 .nbtn{right:auto;left:8px;background:#fbf3dc}
+.slot{display:flex;justify-content:space-between;align-items:center;border-bottom:2px dashed var(--bd);padding:5px 0}
+textarea{-webkit-user-select:text;user-select:text;font-size:12px;background:var(--card);color:var(--tx);border:2px solid var(--bd)}
+.mini{padding:0 8px}
+.ic{height:1.15em;width:auto;image-rendering:pixelated;vertical-align:-0.2em;margin:0 1px;display:inline-block}
+.ic.big{height:1.5em}
+.paper.urgent{border-color:#c0392b;box-shadow:5px 5px 0 rgba(0,0,0,.5),0 0 0 2px #ff8a80}
+.urgtag{position:absolute;top:-10px;left:-6px;background:#c0392b;color:#fff;padding:0 6px;font-size:12px;border:2px solid #7a1a1d}
+.urgb{background:#7a1a1d;border-color:#ff8a80;color:#fff}
 </style></head><body>
 <h1><span class="seal">薬</span>본단 한약방</h1>
 <div id="app"></div>
@@ -154,7 +162,7 @@ let BA=null;
 function mixCol(cs){let r=0,g=0,b=0;cs.forEach(h=>{r+=parseInt(h.slice(1,3),16);g+=parseInt(h.slice(3,5),16);b+=parseInt(h.slice(5,7),16)});const n=cs.length;return "#"+[r,g,b].map(v=>Math.round(v/n).toString(16).padStart(2,"0")).join("")}
 function playBrew(cb){const picks=S.pick.slice();if(!picks.length||BA)return;
  const el=document.getElementById("mg");el.style.display="flex";
- el.innerHTML=`<div class="mbox"><div class="mh"><b>🍶 약을 달이는 중</b><button onclick="baEnd()">건너뛰기</button></div><canvas id="bac" style="width:100%;border:4px solid var(--bd)"></canvas><div id="bam" style="min-height:20px;margin-top:6px;text-align:center"></div></div>`;
+ el.innerHTML=`<div class="mbox"><div class="mh"><b>${ic("sake")} 약을 달이는 중</b><button onclick="baEnd()">건너뛰기</button></div><canvas id="bac" style="width:100%;border:4px solid var(--bd)"></canvas><div id="bam" style="min-height:20px;margin-top:6px;text-align:center"></div></div>`;
  const liq=mixCol(picks.map(k=>COL[k])),kc=document.createElement("canvas");
  spr(kc,POT,{...KP,g:liq});
  BA={t0:Date.now(),picks,cb,kc,liq};clearInterval(MT);MT=setInterval(baLoop,40)}
@@ -190,21 +198,67 @@ function memoHTML(){const p=S.desk.find(x=>x.id===S.sel);let body;
  if(!p||p.sy.note===undefined)body=`<div style="padding:10px">이 손님은 약이 필요한 증상이에요.<br><small>당부는 약이 필요 없는 증상에만 적어요.</small></div>`;
  else{const a=ADV[p.sy.note],n=S.notes[p.id];
   body=`<div class="hw">${p.sp.n} · 증상: ${p.sy.s}</div><small>어떻게 하라고 당부할까요?</small>`+p.sy.o.map(i=>`<button class="op ${n===i?"sel":""}" onclick="pickNote(${i})">${a.o[i][0]}</button>`).join("")+`<div class="memo hw">${n===undefined?"<span style='opacity:.5'>(당부를 고르면 여기에 적혀요)</span>":`사니와의 당부<br>${p.sp.n}에게,<br>${a.o[n][1]}<br>- 사니와 -`}</div>`}
- return `<div class="modal" onclick="toggleMemo()"><div class="mbox" onclick="event.stopPropagation()"><div class="mh"><b>📝 사니와의 당부</b><button onclick="toggleMemo()">✕</button></div>${body}</div></div>`}
-function noticeHTML(){return `<div class="modal"><div class="mbox"><div class="mh"><b>📢 3일차부터 달라지는 점</b></div><div style="font-size:14px;line-height:1.6">· 약이 필요 없는 도검남사도 찾아와요. 처방서에 없는 증상(예: 잠이 오지 않음)이 적힌 처방전이 그 신호예요.<br>· 조제실의 <b>📝 메모장</b>에서 <b>‘사니와의 당부’</b>를 고르면 당부가 자동으로 적혀요.<br>· 당부를 적은 뒤 <b>돌려보내기</b>를 누르면 끝! 알맞은 당부면 명성이 올라요.<br>· 이런 증상에 약을 쓰면 효과가 없고 명성이 떨어져요.</div><button class="p" onclick="closeNotice()">알겠어요</button></div></div>`}
+ return `<div class="modal" onclick="toggleMemo()"><div class="mbox" onclick="event.stopPropagation()"><div class="mh"><b>${ic("memo")} 사니와의 당부</b><button onclick="toggleMemo()">${ic("x")}</button></div>${body}</div></div>`}
+function noticeHTML(){return `<div class="modal"><div class="mbox"><div class="mh"><b>${ic("notice")} 3일차부터 달라지는 점</b></div><div style="font-size:14px;line-height:1.6">· 약이 필요 없는 도검남사도 찾아와요. 처방서에 없는 증상(예: 잠이 오지 않음)이 적힌 처방전이 그 신호예요.<br>· 조제실의 <b>${ic("memo")} 메모장</b>에서 <b>‘사니와의 당부’</b>를 고르면 당부가 자동으로 적혀요.<br>· 당부를 적은 뒤 <b>돌려보내기</b>를 누르면 끝! 알맞은 당부를 적어야 해요.<br>· 이런 증상에 약을 쓰거나 당부가 틀리면 목숨이 줄어요.</div><button class="p" onclick="closeNotice()">알겠어요</button></div></div>`}
+function restart(){if(MG)closeMG();S=JSON.parse(FRESH);fix();MENU=false;save();render()}
+function overHTML(){return `<div class="modal"><div class="mbox"><div class="mh"><b>${ic("lantern")} 영업 종료</b></div><div style="margin:6px 0;line-height:1.6"><b>${ic("pill")} 야겐 토시로</b><br>“... 괜한 일을 시킨 모양이네. 이만 돌아가도 좋아. 수고했다.”</div><div class="box" style="margin:8px 0">버틴 날: ${S.day}일차<br>치료한 도검남사: ${S.cured||0}명</div><button class="p" onclick="restart()">처음부터 다시 시작</button><button style="width:100%;margin-top:6px" onclick="openMenu()">${ic("disk")} 저장 불러오기</button></div></div>`}
+let MENU=false,MSG="",NG=false;
+function openMenu(){MENU=true;MSG="";NG=false;render()}
+function closeMenu(){MENU=false;render()}
+function note2(t){const e=document.getElementById("msg2");if(e)e.textContent=t}
+function slotInfo(i){try{const d=JSON.parse(localStorage.getItem("hyb3_s"+i));return d&&d.s?d:null}catch(e){return null}}
+function fmt(t){const d=new Date(t);return (d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+function saveSlot(i){try{localStorage.setItem("hyb3_s"+i,JSON.stringify({t:Date.now(),d:S.day,l:S.lives,s:JSON.parse(JSON.stringify(S))}));MSG="슬롯 "+i+"에 저장했어요."}catch(e){MSG="저장에 실패했어요."}render()}
+function loadSlot(i){const d=slotInfo(i);if(!d)return;if(MG)closeMG();S=Object.assign(JSON.parse(FRESH),d.s);fix();MENU=false;save();render()}
+function newGame(){if(!NG){NG=true;MSG="한 번 더 누르면 처음부터 시작해요. (슬롯은 그대로)";render();return}
+ NG=false;try{localStorage.removeItem("hyb3")}catch(e){}if(MG)closeMG();S=JSON.parse(FRESH);fix();MENU=false;save();render()}
+function exportCode(){try{const t=document.getElementById("code");t.value=btoa(unescape(encodeURIComponent(JSON.stringify(S))));t.select();note2("코드를 만들었어요. 복사해서 보관하세요.")}catch(e){note2("코드를 만들지 못했어요.")}}
+function importCode(){try{const o=JSON.parse(decodeURIComponent(escape(atob(document.getElementById("code").value.trim()))));if(!o||typeof o.day!=="number")throw 0;
+ if(MG)closeMG();S=Object.assign(JSON.parse(FRESH),o);fix();MENU=false;save();render()}catch(e){note2("코드가 올바르지 않아요.")}}
+function menuHTML(){let rows="";for(let i=1;i<=3;i++){const d=slotInfo(i);rows+=`<div class="slot"><div><b>슬롯 ${i}</b><br><small>${d?`${d.d}일차 · 목숨 ${d.l??3} · ${fmt(d.t)}`:"비어 있음"}</small></div><div><button onclick="saveSlot(${i})">저장</button> <button onclick="loadSlot(${i})" ${d?"":"disabled"}>불러오기</button></div></div>`}
+ return `<div class="modal" onclick="closeMenu()"><div class="mbox" onclick="event.stopPropagation()"><div class="mh"><b>${ic("disk")} 저장 / 불러오기</b><button onclick="closeMenu()">${ic("x")}</button></div><small>진행 상황은 자동으로도 저장돼요.</small>${rows}<div style="margin-top:8px"><b>코드로 옮기기</b></div><textarea id="code" rows="2" style="width:100%;box-sizing:border-box" placeholder="저장 코드를 붙여 넣으세요"></textarea><div class="mh" style="gap:4px"><button onclick="exportCode()">코드 만들기</button><button onclick="importCode()">코드로 불러오기</button><button onclick="newGame()">새 게임</button></div><div id="msg2" style="min-height:18px;font-size:12px">${MSG}</div></div></div>`}
+const PAL={k:"#2a1a10",w:"#ffffff",r:"#d6494d",R:"#8a2a22",o:"#f08a2e",y:"#f2d24b",g:"#4fae4f",G:"#2f7d3a",b:"#4a6fa5",B:"#a7d6e6",n:"#8a5a2b",s:"#e3c07a",e:"#9aa0ad",E:"#565a6e",c:"#fbf3dc",K:"#2a2a33",a:"#8a7a5a"};
+const SP={
+ heart:[".kkk..kkk.","krwrrkrrrk","krrrrrrrrk","krrrrrrrrk",".krrrrrrk.","..krrrrk..","...krrk...","....kk...."],
+ pill:[".kkkkkkkk.","kwwwkrrrrk","kwwwkrrrrk","kwwwkrrrRk",".kkkkkkkk."],
+ disk:["kkkkkkkkk.","kbeeeeekbk","kbeeeeekbk","kbbbbbbbbk","kbccccccbk","kbccccccbk","kbccccccbk","kbbbbbbbbk","kkkkkkkkkk"],
+ sake:["...kkkk...","...kcck...","...kcck...","..kcccck..",".kcccccck.",".kbbbbbbk.",".kbbbbbbk.",".kcccccck.","..kcccck..","...kkkk..."],
+ memo:["e.e.e.e.e.","kkkkkkkkkk","kcccccccck","kcaaaaaack","kcccccccck","kcaaaaccck","kcccccccck","kcaaaaaack","kcccccccck","kkkkkkkkkk"],
+ lantern:["...kkkk...","..kKKKKk..",".krrwrrrk.","kRRRRRRRRk","krrwrrrrrk","kRRRRRRRRk",".krrrrrrk.","..kKKKKk..","...kkkk...","....oo...."],
+ book:[".kkkkkkkk.","kccckkccck","kcaakkaack","kccckkccck","kcaakkaack","kccckkccck",".kkkkkkkk."],
+ notice:[".kkkkkkkk.","krrrrrrrrk","krrrwwrrrk","krrrwwrrrk","krrrwwrrrk","krrrrrrrrk","krrrwwrrrk","krrrrrrrrk",".kkkkkkkk."],
+ ok:[".kkkkkkkk.","kggggggggk","kggggggwgk","kgwgggwggk","kggwgwgggk","kgggwggggk","kggggggggk",".kkkkkkkk."],
+ no:[".kkkkkkkk.","krrrrrrrrk","krwrrrrwrk","krrwrrwrrk","krrrwwrrrk","krrrwwrrrk","krrwrrwrrk","krwrrrrwrk","krrrrrrrrk",".kkkkkkkk."],
+ x:["e.....e",".e...e.","..e.e..","...e...","..e.e..",".e...e.","e.....e"],
+ new:["....yy....","....yy....","...yyyy...","yyyyyyyyyy",".yyyyyyyy.","..yyyyyy..","..yyyyyy..",".yyy..yyy.",".yy....yy."],
+ bamboo:["kgGk..kgGk","kggk..kggk","kkkk..kkkk","kgGk..kgGk","kggk..kggk","kkkk..kkkk","kgGk..kgGk","kggk..kggk","kkkk..kkkk","kgGk..kgGk"],
+ scroll:[".kkkkkkkk.","knnnnnnnnk",".kcccccck.",".kcaaaack.",".kcccccck.",".kcaaaack.",".kcccccck.",".kcaaacck.","knnnnnnnnk",".kkkkkkkk."],
+ basket:["..kkkkkk..",".k......k.","kkkkkkkkkk","knsnsnsnsk","ksnsnsnsnk","knsnsnsnsk","ksnsnsnsnk",".kkkkkkkk."]};
+SP.siren=["...kkkk...","..krwrrk..",".krwrrrrk.",".krrrrrrk.",".krrrrrrk.","kkkkkkkkkk","kEEEEEEEEk","kkkkkkkkkk"];
+SP.clock=["..kkkkkk..",".kcccccck.","kccccaccck","kccccaccck","kccccaaack","kcccccccck",".kcccccck.","..kkkkkk.."];
+SP.heart0=SP.heart.map(r=>r.replace(/r/g,"E").replace(/w/g,"e"));
+SP.bheart=SP.heart.map((r,i)=>i===2?r.slice(0,4)+"k"+r.slice(5):i===3?r.slice(0,5)+"k"+r.slice(6):i===4?r.slice(0,4)+"k"+r.slice(5):i===5?r.slice(0,5)+"k"+r.slice(6):r);
+const ICN={};
+function ic(n,c){if(ICN[n]===undefined){try{const cv=document.createElement("canvas");spr(cv,SP[n],PAL);ICN[n]=cv.toDataURL()}catch(e){ICN[n]=""}}return `<img class="ic ${c||""}" src="${ICN[n]}" alt="">`}
+function expireUrg(p){if(MG)closeMG();const keep=S.sel!==p.id&&S.desk.some(x=>x.id===S.sel)?{sel:S.sel,pick:S.pick,proc:S.proc}:null;
+ S.sel=p.id;S.lives=Math.max(0,S.lives-1);
+ finish(`<span class="bad">${p.sp.n}의 긴급 처방전, 시간 초과! (${ic("bheart")} 목숨 -1)</span>`);
+ if(keep&&S.phase!=="over"&&S.desk.some(x=>x.id===keep.sel)){S.sel=keep.sel;S.pick=keep.pick;S.proc=keep.proc;render()}}
+function closeNotice7(){S.notice7=false;S.seen7=true;save();render()}
+function notice7HTML(){return `<div class="modal"><div class="mbox"><div class="mh"><b>${ic("siren")} 7일차부터 달라지는 점</b></div><div style="font-size:14px;line-height:1.6">· <b>긴급 처방전</b>이 들어와요. 붉은 ‘긴급’ 표시가 붙어 있어요.<br>· 조제실에서 고른 순간부터 <b>45초</b> 안에 약을 달여야 해요. <small>(‘제조 완료’를 누르면 시간이 멈춰요. 손질 시간도 포함이에요!)</small><br>· 시간 안에 달이지 못하면 <b>목숨이 1개</b> 줄어요.<br>· 긴급 처방전은 연달아 오지 않아요. 약이 필요 없는 손님은 긴급이 아니에요.</div><button class="p" onclick="closeNotice7()">알겠어요</button></div></div>`}
 function setM(k,m){S.proc[k]=m;render()}
 function openMG(k,m){if(S.proc[k])return;const T={"썰기":"박자에 맞춰 3번 썸어요! 노란 막대가 초록 구간일 때 탭","빻기":"빠르게 연타해서 고우게 빻아요!","우리기":"꽓 누르고 있다가 초록 구간에서 손을 떼요"};
  MG={k,m,v:0,hits:0,dir:1,hold:false,down:0};
  const z=m==="썰기"?"left:38%;width:24%":m==="우리기"?"left:60%;width:25%":"display:none";
  const bt=m==="우리기"?'onpointerdown="event.preventDefault();mgHold(1)" onpointerup="mgHold(0)" onpointerleave="mgHold(0)" onpointercancel="mgHold(0)" oncontextmenu="return false"':'onpointerdown="event.preventDefault();mgAct()" oncontextmenu="return false"';
  const el=document.getElementById("mg");el.style.display="flex";
- el.innerHTML=`<div class="mbox" style="user-select:none;touch-action:manipulation"><div class="mh"><b>${HERBS[k].n} ${m}</b><button onclick="closeMG()">✕</button></div><small>${T[m]}</small><canvas id="mgc" style="width:80%;margin-top:6px;border:4px solid var(--bd)"></canvas><div class="gauge"><div id="gz" style="${z}"></div><div id="gb"></div></div><div id="mgs" style="min-height:18px;font-size:13px"></div><button class="p" ${bt}>${m==="우리기"?"꽓 누르기":m+"!"}</button></div>`;
+ el.innerHTML=`<div class="mbox" style="user-select:none;touch-action:manipulation"><div class="mh"><b>${HERBS[k].n} ${m}</b><button onclick="closeMG()">${ic("x")}</button></div><small>${T[m]}</small><canvas id="mgc" style="width:80%;margin-top:6px;border:4px solid var(--bd)"></canvas><div class="gauge"><div id="gz" style="${z}"></div><div id="gb"></div></div><div id="mgs" style="min-height:18px;font-size:13px"></div><button class="p" ${bt}>${m==="우리기"?"꽓 누르기":m+"!"}</button></div>`;
  clearInterval(MT);MT=setInterval(mgLoop,30);mgDraw()}
 function closeMG(){clearInterval(MT);MG=null;document.getElementById("mg").style.display="none"}
-function mgMsg(t){const e=document.getElementById("mgs");if(e)e.textContent=t}
+function mgMsg(t){const e=document.getElementById("mgs");if(e)e.innerHTML=t}
 function mgDone(){const k=MG.k,m=MG.m;closeMG();S.proc[k]=m;render()}
 function mgAct(){const g=MG;if(!g)return;
- if(g.m==="썰기"){g.down=Date.now();if(g.v>=38&&g.v<=62){g.hits++;mgMsg("✅ 좋아요! "+g.hits+"/3");if(g.hits>=3)mgDone()}else mgMsg("❌ 빗나갔어요")}
+ if(g.m==="썰기"){g.down=Date.now();if(g.v>=38&&g.v<=62){g.hits++;mgMsg(ic("ok")+" 좋아요! "+g.hits+"/3");if(g.hits>=3)mgDone()}else mgMsg(ic("no")+" 빗나갔어요")}
  else{g.v=Math.min(100,g.v+9);if(g.v>=100)mgDone()}}
 function mgHold(on){const g=MG;if(!g||g.m!=="우리기")return;
  if(on){if(!g.hold){g.hold=true;g.v=0}}
@@ -248,9 +302,9 @@ function mgDraw(){const c=document.getElementById("mgc"),g=MG;if(!c||!g)return;c
   for(let i=0;i<3;i++){const ph=((n/500)+i*0.33)%1;f("#ffffffaa",26+i*6+Math.sin(ph*7+i)*2,16-ph*14*(0.4+pw),2,2)}
   if(g.hold){f("#ff9a2e",16+Math.floor(n/100)%2,34,2,2);f("#ff9a2e",46,34+Math.floor(n/110)%2,2,2);f("#ffd45a",31,34,2,2)}
  }}
-function procHTML(){return S.pick.length?S.pick.map(k=>`<div class="pr"><b>${HERBS[k].n}</b>`+(S.proc[k]?`<span class="done">✔ ${S.proc[k]} 완료</span>`:MET.map(m=>`<button class="mb" onclick="openMG('${k}','${m}')"><canvas data-t="${m}"></canvas>${m}</button>`).join(""))+`</div>`).join(""):`<small>약재를 골라 손질해 주세요</small>`}
-const EFF={insam:"기운↑ 몸 데움",hwanggi:"기운↑",danggwi:"피 보충",sukji:"피 보충·데움",saenggang:"몸 데움",bakha:"열 내림",seokgo:"열 크게 내림",gamcho:"약효 순화",jakyak:"피 보충·열 식힘",cheongung:"피·기운 순환"};
-function bookHTML(){return `<div class="modal" onclick="toggleBook()"><div class="mbox" onclick="event.stopPropagation()"><div class="mh"><b>📖 처방서</b><button onclick="toggleBook()">✕</button></div><table class="bt"><tr><th>증상</th><th>병</th><th>처방</th></tr>`+SYMPTOMS.filter(s=>s.u<=S.day).map(s=>`<tr><td>${s.u===S.day&&S.day>1?"🆕 ":""}${s.s}</td><td>${s.d.split("(")[0]}</td><td><b>${rxText(s)}</b></td></tr>`).join("")+`</table><div class="bh">`+Object.entries(HERBS).filter(([k])=>open(k)).map(([k,v])=>`<span><b>${v.n}</b> ${EFF[k]} · ${METHOD[k]}</span>`).join("")+`</div></div></div>`}
+function procHTML(){return S.pick.length?S.pick.map(k=>`<div class="pr"><b>${HERBS[k].n}</b>`+(S.proc[k]?`<span class="done">${ic("ok")} ${S.proc[k]} 완료</span>`:MET.map(m=>`<button class="mb" onclick="openMG('${k}','${m}')"><canvas data-t="${m}"></canvas>${m}</button>`).join(""))+`</div>`).join(""):`<small>약재를 골라 손질해 주세요</small>`}
+const EFF={insam:"기운 보충·몸 데움",hwanggi:"기운 보충",danggwi:"피 보충",sukji:"피 보충·데움",saenggang:"몸 데움",bakha:"열 내림",seokgo:"열 크게 내림",gamcho:"약효 순화",jakyak:"피 보충·열 식힘",cheongung:"피·기운 순환"};
+function bookHTML(){return `<div class="modal" onclick="toggleBook()"><div class="mbox" onclick="event.stopPropagation()"><div class="mh"><b>${ic("book")} 처방서</b><button onclick="toggleBook()">${ic("x")}</button></div><table class="bt"><tr><th>증상</th><th>병</th><th>처방</th></tr>`+SYMPTOMS.filter(s=>s.u<=S.day).map(s=>`<tr><td>${s.u===S.day&&S.day>1?ic("new")+" ":""}${s.s}</td><td>${s.d.split("(")[0]}</td><td><b>${rxText(s)}</b></td></tr>`).join("")+`</table><div class="bh">`+Object.entries(HERBS).filter(([k])=>open(k)).map(([k,v])=>`<span><b>${v.n}</b> ${EFF[k]} · ${METHOD[k]}</span>`).join("")+`</div></div></div>`}
 function spr(cv,rows,pal){cv.width=rows[0].length;cv.height=rows.length;const x=cv.getContext("2d");x.clearRect(0,0,cv.width,cv.height);rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if(pal[ch]){x.fillStyle=pal[ch];x.fillRect(i,j,1,1)}}))}
 const lD="#2f7d3a",lM="#4fae4f",lL="#8fd16a";
 const SPROUT=[[lD,7,8,1,4],[lM,5,7,2,1],[lL,5,7,1,1],[lM,8,6,2,1],[lL,9,6,1,1]];
@@ -282,15 +336,16 @@ function paint(){
 
  document.querySelectorAll("canvas[data-t]").forEach(c=>spr(c,TOOL[c.dataset.t],TP));const p=document.getElementById("pot");if(p)pot(p);const b=document.getElementById("bk");if(b)spr(b,BOOK,BP);const np=document.getElementById("np");if(np)spr(np,NOTE,NP)}
 // ===== 상태 =====
-let S={day:1,rep:0,inv:{},patches:{},phase:"prep",tab:"desk",book:false,memo:false,notes:{},notice:false,seen3:false,proc:{},total:0,spawned:0,desk:[],sel:null,pick:[],log:"",say:"",nextAt:0,uid:0};
+let S={day:1,rep:0,lives:3,cured:0,inv:{},patches:{},phase:"prep",tab:"desk",book:false,memo:false,notes:{},notice:false,seen3:false,notice7:false,seen7:false,lastUrg:false,proc:{},total:0,spawned:0,desk:[],sel:null,pick:[],log:"",say:"",nextAt:0,uid:0};
+const FRESH=JSON.stringify(S);
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const $=document.getElementById("app");
 let busy=false;
-function showErr(e){try{document.body.insertAdjacentHTML("afterbegin",`<pre style="color:#f88;font-size:11px;white-space:pre-wrap">⚠ ${e&&e.message||e}</pre>`)}catch(_){}}
+function showErr(e){try{document.body.insertAdjacentHTML("afterbegin",`<pre style="color:#f88;font-size:11px;white-space:pre-wrap">[오류] ${e&&e.message||e}</pre>`)}catch(_){}}
 window.onerror=m=>showErr(m);
 function save(){try{localStorage.setItem("hyb3",JSON.stringify(S))}catch(e){}}
-function load(){try{const d=localStorage.getItem("hyb3");if(d)S=Object.assign(S,JSON.parse(d))}catch(e){}
- S.proc={};S.inv=S.inv||{};S.patches=S.patches||{};S.pick=Array.isArray(S.pick)?S.pick.filter(k=>HERBS[k]):[];
+function load(){try{const d=localStorage.getItem("hyb3");if(d)S=Object.assign(S,JSON.parse(d))}catch(e){}fix()}
+function fix(){(S.desk||[]).forEach(p=>{if(p&&p.urg&&p.t0&&!p.stopped)p.t0=Date.now()});if(S.day>=7&&!S.seen7&&S.phase==="prep")S.notice7=true;if(typeof S.lives!=="number")S.lives=3;if(S.lives<=0)S.phase="over";if(!["prep","day","end","over"].includes(S.phase))S.phase="prep";S.proc={};S.inv=S.inv||{};S.patches=S.patches||{};S.pick=Array.isArray(S.pick)?S.pick.filter(k=>HERBS[k]):[];
  S.desk=(Array.isArray(S.desk)?S.desk:[]).filter(p=>p&&p.id&&p.sp&&p.sy&&Array.isArray(p.sy.need));
  if(!S.desk.some(p=>p.id===S.sel))S.sel=S.desk.length?S.desk[0].id:null;
  if(!["field","desk","lab"].includes(S.tab))S.tab="desk";S.book=false;S.memo=false;S.notes=S.notes||{};if(S.day>=3&&!S.seen3&&S.phase==="prep")S.notice=true;
@@ -298,55 +353,60 @@ function load(){try{const d=localStorage.getItem("hyb3");if(d)S=Object.assign(S,
 function gather(k){if(!ready(k))return;S.inv[k]=(S.inv[k]||0)+1;S.patches[k]=Date.now()+HERBS[k].r*1000;save();render()}
 function go(t){S.tab=t;render()}
 function toggleBook(){S.book=!S.book;render()}
-function tick(){if(document.hidden||busy)return;const now=Date.now();
+function tick(){if(document.hidden||busy||MENU)return;const now=Date.now();
  for(const k in HERBS){const s=document.getElementById("gs_"+k);if(s){const r=(S.patches[k]||0)-now;s.textContent=r<=0?"수확!":Math.ceil(r/1000)+"초"}}
  if(S.phase==="day"){
+  const ex=S.desk.find(p=>p.urg&&p.t0&&!p.stopped&&now-p.t0>=45000);if(ex){expireUrg(ex);return}
+  const ub=document.getElementById("ub");if(ub)ub.innerHTML=S.desk.filter(p=>p.urg&&p.t0&&!p.stopped).map(p=>ic("clock")+" 긴급! "+p.sp.n+" "+Math.max(0,Math.ceil((p.t0+45000-now)/1000))+"초").join(" · ");
   if(S.spawned<S.total&&S.desk.length<DESKMAX&&now>=S.nextAt){spawn();return}
   const nx=document.getElementById("nx");
   if(nx)nx.textContent=S.spawned>=S.total?"":S.desk.length>=DESKMAX?"책상이 가득 참":"다음 처방전 "+Math.max(0,Math.ceil((S.nextAt-now)/1000))+"초"}
  paint()}
 setInterval(tick,500);
-function startDay(){S.total=3+Math.floor(S.rep/10);S.spawned=0;S.desk=[];S.sel=null;S.pick=[];S.log="";S.say="오늘도 잘 부탁한다, 대장.";S.phase="day";S.nextAt=Date.now()+1500;save();render()}
-function spawn(){const adv=S.day>=3&&Math.random()<0.3,p={id:++S.uid,sp:rnd(SPIRITS),sy:adv?mkAdv():rnd(SYMPTOMS.filter(s=>s.u<=S.day))};S.desk.push(p);S.spawned++;S.say=rnd(LINES);S.nextAt=Date.now()+SPAWN*1000;if(S.sel===null)S.sel=p.id;save();render()}
+function startDay(){S.total=Math.min(8,3+Math.floor((S.day-1)/4));S.spawned=0;S.desk=[];S.sel=null;S.pick=[];S.log="";S.say="오늘도 잘 부탁한다, 대장.";S.phase="day";S.nextAt=Date.now()+1500;save();render()}
+function spawn(){const adv=S.day>=3&&Math.random()<0.3,p={id:++S.uid,sp:rnd(SPIRITS),sy:adv?mkAdv():rnd(SYMPTOMS.filter(s=>s.u<=S.day))};
+ if(S.day>=7&&!adv&&!S.lastUrg&&Math.random()<0.3)p.urg=true;S.lastUrg=!!p.urg;S.desk.push(p);S.spawned++;S.say=rnd(LINES);S.nextAt=Date.now()+SPAWN*1000;if(S.sel===null)S.sel=p.id;save();render()}
 function selRx(id){S.sel=id;S.pick=[];S.proc={};S.tab="lab";render()}
 function toggle(k){if(S.proc[k])return;const i=S.pick.indexOf(k);if(i>=0){S.pick.splice(i,1);delete S.proc[k]}else if(S.pick.length<MAXPICK&&(S.inv[k]||0)>0)S.pick.push(k);render()}
 function finish(msg){S.log=msg;S.desk=S.desk.filter(x=>x.id!==S.sel);S.sel=S.desk.length?S.desk[0].id:null;S.pick=[];S.proc={};
- if(S.spawned>=S.total&&!S.desk.length){S.phase="end";S.say="수고했다, 대장. 오늘은 여기까지다.";S.tab="desk"}
+ if(S.lives<=0){S.phase="over";S.desk=[];S.sel=null;S.say="... 괜한 일을 시킨 모양이네. 이만 돌아가도 좋아. 수고했다.";S.tab="desk"}else if(S.spawned>=S.total&&!S.desk.length){S.phase="end";S.say="수고했다, 대장. 오늘은 여기까지다.";S.tab="desk"}
  save();render()}
-function brew(){playBrew(doBrew)}
+function brew(){const p=S.desk.find(x=>x.id===S.sel);if(p&&p.urg)p.stopped=true;playBrew(doBrew)}
 function doBrew(){const p=S.desk.find(x=>x.id===S.sel);if(!p)return;
- if(p.sy.note!==undefined){S.pick.forEach(k=>S.inv[k]--);S.rep=Math.max(0,S.rep-1);return finish(`<span class="bad">${p.sp.n}에게는 약이 필요 없었다… 약이 소용없었다 (명성-1)</span>`)}
+ if(p.sy.note!==undefined){S.pick.forEach(k=>S.inv[k]--);S.lives=Math.max(0,S.lives-1);return finish(`<span class="bad">${p.sp.n}에게는 약이 필요 없었다… 약이 소용없었다 (${ic("bheart")} 목숨 -1)</span>`)}
  const tags=[...new Set(S.pick.flatMap(k=>HERBS[k].t))],need=p.sy.need,hit=need.filter(t=>tags.includes(t)).length,good=[...new Set(S.pick.filter(k=>S.proc[k]===METHOD[k]).flatMap(k=>HERBS[k].t))],hg=need.filter(t=>good.includes(t)).length;
  let extra=tags.filter(t=>t!=="조화"&&!need.includes(t)).length;if(tags.includes("조화")&&extra>0)extra--;
  S.pick.forEach(k=>S.inv[k]--);let m;
- if(hg===need.length&&extra===0){S.rep++;m=`<span class="ok">${p.sp.n}, 완치! (명성+1)</span>`}
+ if(hg===need.length&&extra===0){S.cured=(S.cured||0)+1;m=`<span class="ok">${p.sp.n}, 완치!</span>`}
  else if(hit===need.length)m=`${p.sp.n}, ${extra?"나았지만 약이 과했다.":"나았지만 손질이 맞지 않아 효과가 약했다."}`;
  else if(hit>0)m=`${p.sp.n}, 조금 호전됐다.`;
- else{S.rep=Math.max(0,S.rep-1);m=`<span class="bad">${p.sp.n}, 효과 없음… (명성-1)</span>`}
+ else{S.lives=Math.max(0,S.lives-1);m=`<span class="bad">${p.sp.n}, 효과 없음… (${ic("bheart")} 목숨 -1)</span>`}
  finish(m)}
 function skip(){const p=S.desk.find(x=>x.id===S.sel);if(!p)return;
  if(p.sy.note!==undefined){const n=S.notes[p.id];
-  if(n===undefined){S.rep=Math.max(0,S.rep-1);return finish(`<span class="bad">${p.sp.n}을(를) 당부 없이 돌려보냈다 (명성-1)</span>`)}
-  if(n===0){S.rep++;return finish(`<span class="ok">${p.sp.n}, 당부를 듣고 편안히 돌아갔다! (명성+1)</span>`)}
-  S.rep=Math.max(0,S.rep-1);return finish(`<span class="bad">${p.sp.n}, 당부가 맞지 않아 여전히 힘들어 보인다 (명성-1)</span>`)}
- S.rep=Math.max(0,S.rep-1);finish(`<span class="bad">${p.sp.n}을(를) 돌려보냈다 (명성-1)</span>`)}
-function next(){S.day++;if(S.day>=3&&!S.seen3)S.notice=true;S.phase="prep";S.say="";const n=SYMPTOMS.filter(s=>s.u===S.day).length+Object.keys(HU).filter(k=>HU[k]===S.day).length;S.log=n?"📖 처방서에 새로운 내용이 추가되었습니다!":"";save();render()}
+  if(n===undefined){S.lives=Math.max(0,S.lives-1);return finish(`<span class="bad">${p.sp.n}을(를) 당부 없이 돌려보냈다 (${ic("bheart")} 목숨 -1)</span>`)}
+  if(n===0){S.cured=(S.cured||0)+1;return finish(`<span class="ok">${p.sp.n}, 당부를 듣고 편안히 돌아갔다!</span>`)}
+  S.lives=Math.max(0,S.lives-1);return finish(`<span class="bad">${p.sp.n}, 당부가 맞지 않아 여전히 힘들어 보인다 (${ic("bheart")} 목숨 -1)</span>`)}
+ S.lives=Math.max(0,S.lives-1);finish(`<span class="bad">${p.sp.n}을(를) 돌려보냈다 (${ic("bheart")} 목숨 -1)</span>`)}
+function next(){S.day++;if(S.day>=7&&!S.seen7)S.notice7=true;if(S.day>=3&&!S.seen3)S.notice=true;S.phase="prep";S.say="";const n=SYMPTOMS.filter(s=>s.u===S.day).length+Object.keys(HU).filter(k=>HU[k]===S.day).length;S.log=n?ic("book")+" 처방서에 새로운 내용이 추가되었습니다!":"";save();render()}
 function reset(){if(confirm("초기화할까요?")){localStorage.removeItem("hyb3");location.reload()}}
 // ===== 화면 =====
 const tg=a=>a.map(t=>`<span class="tag">${t}</span>`).join("");
-const TABS=[["field","🎋 약초밭"],["desk","📜 책상"],["lab","🍶 조제실"]];
-function paper(p){const r=((p.id*37)%9)-4;return `<button class="paper ${p.id===S.sel?"sel":""}" style="transform:rotate(${r}deg)" onclick="selRx(${p.id})"><div class="pt">처 방 전</div><div class="pn">${p.sp.n}</div><div class="ps">증상: ${p.sy.s||p.sy.n}</div><div class="stamp">診</div></button>`}
-function rxCard(p){return `<b>${p.sp.n}</b> — 증상: ${p.sy.s||p.sy.n}`}
+const TABS=[["field","bamboo","약초밭"],["desk","scroll","책상"],["lab","sake","조제실"]];
+function paper(p){const r=((p.id*37)%9)-4;return `<button class="paper ${p.id===S.sel?"sel":""} ${p.urg?"urgent":""}" style="transform:rotate(${r}deg)" onclick="selRx(${p.id})">${p.urg?`<div class="urgtag">${ic("siren")} 긴급</div>`:""}<div class="pt">처 방 전</div><div class="pn">${p.sp.n}</div><div class="ps">증상: ${p.sy.s||p.sy.n}</div><div class="stamp">診</div></button>`}
+function rxCard(p){return `${p.urg?ic("siren")+" ":""}<b>${p.sp.n}</b> — 증상: ${p.sy.s||p.sy.n}`}
 function render(){if(busy)return;busy=true;try{draw()}catch(e){showErr(e)}busy=false;paint();tick()}
 function draw(){
- let h=`<div class="top"><span>🏮 ${S.day}일차</span><span>🎴 명성 ${S.rep}</span></div><div class="nav">`+
- TABS.map(([k,l])=>`<button class="tab ${S.tab===k?"on":""}" onclick="go('${k}')">${l}${k==="desk"&&S.desk.length?` <span class="badge">${S.desk.length}</span>`:""}</button>`).join("")+`</div>`;
- if(S.phase==="day"||S.log)h+=`<div class="bar">${S.phase==="day"?`💊 야겐: “${S.say}” <small>(${S.spawned}/${S.total}) <span id="nx"></span></small>`:""}${S.log?`<div>${S.log}</div>`:""}</div>`;
+ let h=`<div class="top"><span>${ic("lantern")} ${S.day}일차</span><span>${ic("heart","big").repeat(Math.max(0,S.lives))}${ic("heart0","big").repeat(Math.max(0,3-S.lives))}</span><button class="mini" onclick="openMenu()">${ic("disk")}</button></div><div class="nav">`+
+ TABS.map(([k,i,l])=>`<button class="tab ${S.tab===k?"on":""}" onclick="go('${k}')">${ic(i)} ${l}${k==="desk"&&S.desk.length?` <span class="badge">${S.desk.length}</span>`:""}</button>`).join("")+`</div>`;
+ if(S.tab==="lab"&&S.phase==="day"){const q=S.desk.find(x=>x.id===S.sel);if(q&&q.urg&&!q.t0)q.t0=Date.now()}
+ if(S.phase==="day"&&S.desk.some(p=>p.urg&&p.t0&&!p.stopped))h+='<div class="bar urgb" id="ub"></div>';
+ if(S.phase==="day"||S.log)h+=`<div class="bar">${S.phase==="day"?`${ic("pill")} 야겐: “${S.say}” <small>(${S.spawned}/${S.total}) <span id="nx"></span></small>`:""}${S.log?`<div>${S.log}</div>`:""}</div>`;
  if(S.tab==="field"){
   h+=`<div class="scene field"><div class="grid">`+Object.entries(HERBS).filter(([k])=>open(k)).map(([k,v])=>`<button class="plot" onclick="gather('${k}')"><canvas data-k="${k}" style="width:100%"></canvas>${v.n}<br><small>×${S.inv[k]||0}</small> <span id="gs_${k}"></span></button>`).join("")+`</div></div><div class="box"><small>익은 약초를 눌러 수확하면 일정 시간 뒤 다시 자랍니다.</small></div>`;
  }else if(S.tab==="desk"){
-  h+=`<div class="bub" style="margin:10px 0"><b>💊 야겐 토시로</b><br>${S.phase==="prep"?(S.day===1?"사니와, 오기를 기다렸다. 약연 일은 내가 맡지. 먼저 약초밭에서 약재를 모아 두는 게 좋겠어.":"약재는 충분한가, 대장?"):S.phase==="end"?"“"+S.say+"”":"“"+(S.say||"…")+"”"}</div>`;
-  if(S.phase==="prep")h+=`<div class="box"><b>🧺 보유 약재</b><br>${Object.entries(HERBS).filter(([k])=>open(k)).map(([k,v])=>`${v.n}×${S.inv[k]||0}`).join(" ")}<button class="p" onclick="startDay()">하루 일과 시작하기</button></div>`;
+  h+=`<div class="bub" style="margin:10px 0"><b>${ic("pill")} 야겐 토시로</b><br>${S.phase==="prep"?(S.day===1?"사니와, 오기를 기다렸다. 약연 일은 내가 맡지. 먼저 약초밭에서 약재를 모아 두는 게 좋겠어. 처방을 틀릴 때마다 목숨이 하나씩 줄어. 셋을 다 잃으면 끝이다.":"약재는 충분한가, 대장?"):S.phase==="end"?"“"+S.say+"”":"“"+(S.say||"…")+"”"}</div>`;
+  if(S.phase==="prep")h+=`<div class="box"><b>${ic("basket")} 보유 약재</b><br>${Object.entries(HERBS).filter(([k])=>open(k)).map(([k,v])=>`${v.n}×${S.inv[k]||0}`).join(" ")}<button class="p" onclick="startDay()">하루 일과 시작하기</button></div>`;
   else if(S.phase==="end")h+=`<div class="box"><button class="p" onclick="next()">다음 날로</button></div>`;
   else h+=`<div class="scene desk"><div class="papers">`+(S.desk.length?S.desk.map(p=>paper(p)).join(""):`<div class="note">처방전이 올 때까지 기다리는 중…<br>약초밭에서 약재를 모아 두자.</div>`)+`</div></div>`;
  }else{
@@ -358,9 +418,10 @@ function draw(){
    `</div>${procHTML()}<button class="p" onclick="brew()" ${S.pick.length&&S.pick.every(k=>S.proc[k])?"":"disabled"}>제조 완료</button><button style="width:100%;margin-top:6px" onclick="skip()">돌려보내기</button><small>※ 몸을 데우는 약재와 식히는 약재를 함께 쓰면 효과가 상쇄되고, 감초는 약효를 순하게 해요. 약재마다 맞는 손질법이 있으니 처방서를 확인하세요.</small></div>`;
   }else h+=`<div class="box"><small>책상에서 처방전을 골라 오세요.</small></div>`;
  }
- if(S.book)h+=bookHTML();if(S.memo)h+=memoHTML();if(S.notice)h+=noticeHTML();
- h+=`<div style="text-align:center"><button onclick="reset()"><small>초기화</small></button></div>`;
+ if(S.book)h+=bookHTML();if(S.memo)h+=memoHTML();if(S.notice)h+=noticeHTML();if(S.notice7)h+=notice7HTML();if(S.phase==="over")h+=overHTML();if(MENU)h+=menuHTML();
+
  $.innerHTML=h}
 document.addEventListener("contextmenu",e=>e.preventDefault());
+document.addEventListener("visibilitychange",()=>{if(document.hidden)save()});
 load();render();
 </script></body></html>
