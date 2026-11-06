@@ -131,6 +131,7 @@ textarea{-webkit-user-select:text;user-select:text;font-size:12px;background:var
 @keyframes tutp{to{outline-color:#e0442f;outline-offset:4px}}
 .hnav{display:flex;justify-content:space-between;align-items:center;margin-top:8px}.hnav span{font-size:13px}
 @media (max-width:380px){.top{font-size:13px}.top .mini{padding:2px 4px!important;margin-left:2px}.top .ic.big{height:1.3em}.cmb{font-size:11px}}
+.gh{visibility:hidden}
 </style></head><body>
 <h1><span class="seal">薬</span>혼마루 한약방</h1>
 <div id="app"></div>
@@ -201,7 +202,7 @@ function playBrew(cb){const picks=S.pick.slice();if(!picks.length||BA)return;
  const liq=mixCol(picks.map(k=>COL[k])),kc=document.createElement("canvas");
  spr(kc,POT,{...KP,g:liq});
  BA={t0:Date.now(),picks,cb,kc,liq};clearInterval(MT);MT=setInterval(baLoop,40);startBrewSnd(picks)}
-function baEnd(){if(!BA)return;const cb=BA.cb;clearInterval(MT);stopBrewSnd();BA=null;document.getElementById("mg").style.display="none";cb()}
+function baEnd(){if(!BA)return;lockClicks();const cb=BA.cb;clearInterval(MT);stopBrewSnd();BA=null;document.getElementById("mg").style.display="none";cb()}
 function baLoop(){const b=BA;if(!b)return;const t=Date.now()-b.t0;if(t>9200){baEnd();return}
  const c=document.getElementById("bac");if(!c)return;c.width=48;c.height=32;const x=c.getContext("2d");x.imageSmoothingEnabled=false;
  const f=(o,a,y,w,h)=>{x.fillStyle=o;x.fillRect(Math.round(a),Math.round(y),w,h)},cl=(v)=>Math.max(0,Math.min(1,v));
@@ -296,7 +297,7 @@ let TYS={};
 const esc=t=>String(t).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
 const TYMS=45;
 function ty(text,k){let m=TYS[k];if(!m||m.txt!==text)m=TYS[k]={txt:text,t0:Date.now()};return text.slice(0,Math.floor((Date.now()-m.t0)/TYMS)+1)}
-function typeTick(){document.querySelectorAll(".sayt").forEach(e=>{const t=ty(e.dataset.full,e.dataset.k);if(e.textContent!==t)e.textContent=t})}
+function typeTick(){document.querySelectorAll(".sayt").forEach(e=>{const full=e.dataset.full,t=ty(full,e.dataset.k);if(e._t===t&&e.firstChild)return;e._t=t;e.textContent=t;if(t.length<full.length){const g=document.createElement("span");g.className="gh";g.textContent=full.slice(t.length);e.appendChild(g)}})}
 setInterval(typeTick,15);
 function bub(){if(S.tapSay&&S.phase!=="over"){const t=S.tapSay;return `<span class="sayt" data-k="b" data-full="${esc(t)}">${ty(t,"b")}</span>`}const t=S.phase==="prep"?(S.day===1?"대장, 오기를 기다렸다. 약연 일은 내가 맡지. 먼저 약초밭에서 약재를 모아 두는 게 좋겠어. 처방을 틀릴 때마다 목숨이 하나씩 줄어. 셋을 다 잃으면 끝이다.":W().say):S.phase==="end"?S.say:(S.say||"…");return `<span class="sayt" data-k="b" data-full="${esc(t)}">${ty(t,"b")}</span>`}
 function clearTap(){S.tapSay="";S.tease=false;S.back=false}
@@ -377,7 +378,7 @@ function openMG(k,m){if(S.proc[k])return;const T={"썰기":"박자에 맞춰 3�
  const el=document.getElementById("mg");el.style.display="flex";
  el.innerHTML=`<div class="mbox" style="user-select:none;touch-action:manipulation"><div class="mh"><b>${HERBS[k].n} ${m}</b><button onclick="closeMG()">${ic("x")}</button></div><small>${T[m]}</small><canvas id="mgc" style="width:80%;margin-top:6px;border:4px solid var(--bd)"></canvas><div class="gauge"><div id="gz" style="${z}"></div><div id="gb"></div></div><div id="mgs" style="min-height:18px;font-size:13px"></div><button class="p" ${bt}>${m==="우리기"?"꾹 누르기":m+"!"}</button></div>`;
  clearInterval(MT);MT=setInterval(mgLoop,30);mgDraw()}
-function closeMG(){clearInterval(MT);stopWater();MG=null;document.getElementById("mg").style.display="none"}
+function closeMG(){lockClicks();clearInterval(MT);stopWater();MG=null;document.getElementById("mg").style.display="none"}
 function mgMsg(t){const e=document.getElementById("mgs");if(e)e.innerHTML=t}
 function mgStars(g){let a;if(g.m==="썰기"){a=g.ds.reduce((x,y)=>x+y,0)/Math.max(1,g.ds.length)+g.miss*3;return a<=4.5?3:a<=8?2:1}
  if(g.m==="빻기"){a=(Date.now()-(g.t0||Date.now()))/1000;return a<=2.8?3:a<=4.8?2:1}
@@ -462,6 +463,7 @@ function pot(cv){const liq=S.pick.length?COL[S.pick[0]]:"#7fc06a";spr(cv,POT,{..
  x.fillRect(0,t?0:1,2,1);x.fillRect(2,t?1:0,2,1);if(S.pick.length>1)x.fillRect(8,t?0:1,2,1)}
 const ready=k=>(S.patches[k]||0)<=Date.now();
 function paint(){
+ typeTick();
  document.querySelectorAll("canvas[data-k]").forEach(c=>plant(c,c.dataset.k,c.dataset.g==="1"||ready(c.dataset.k)));
 
  document.querySelectorAll("canvas[data-t]").forEach(c=>spr(c,TOOL[c.dataset.t],TP));tutHL();const p=document.getElementById("pot");if(p)pot(p);const b=document.getElementById("bk");if(b)spr(b,BOOK,BP);const np=document.getElementById("np");if(np)spr(np,NOTE,NP)}
@@ -470,7 +472,7 @@ let S={day:1,tut:1,wx:"clear",combo:0,bestCombo:0,top:0,rep:0,lives:3,cured:0,in
 const FRESH=JSON.stringify(S);
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const $=document.getElementById("app");
-let busy=false;
+let busy=false,LOCKT=0,PTRD=false,PTRT=0;const lockClicks=()=>{LOCKT=Date.now()+650};
 function showErr(e){try{document.body.insertAdjacentHTML("afterbegin",`<pre style="color:#f88;font-size:11px;white-space:pre-wrap">[오류] ${e&&e.message||e}</pre>`)}catch(_){}}
 window.onerror=m=>showErr(m);
 function save(){try{localStorage.setItem("hyb3",JSON.stringify(S))}catch(e){}}
@@ -488,6 +490,7 @@ function toggleBook(){S.book=!S.book;if(S.tut===5&&S.book)S.tutB=true;sfx("page"
 function tick(){if(document.hidden||busy||MENU)return;const now=Date.now();
  for(const k in HERBS){const s=document.getElementById("gs_"+k);if(s){const r=(S.patches[k]||0)-now;s.textContent=r<=0?"수확!":Math.ceil(r/1000)+"초"}}
  if(S.phase==="day"){
+  if(PTRD&&now-PTRT<1500){paint();return}
   const ex=S.desk.find(p=>p.urg&&p.t0&&!p.stopped&&now-p.t0>=45000);if(ex){expireUrg(ex);return}
   const ub=document.getElementById("ub");if(ub)ub.innerHTML=S.desk.filter(p=>p.urg&&p.t0&&!p.stopped).map(p=>ic("clock")+" 긴급! "+p.sp.n+" "+Math.max(0,Math.ceil((p.t0+45000-now)/1000))+"초").join(" · ");
   if(S.spawned<S.total&&S.desk.length<DESKMAX&&now>=S.nextAt&&!(S.tut>0&&S.spawned>=1)){spawn();return}
@@ -507,7 +510,7 @@ function finish(msg){if(S.tut>0&&S.tut<9){S.tut=9;S.tutMsg=""}resSfx(msg);clearT
  if(S.lives<=0){S.phase="over";S.desk=[];S.sel=null;S.say="... 괜한 일을 시킨 모양이네. 이만 돌아가도 좋아. 수고했다.";S.tab="desk"}else if(S.spawned>=S.total&&!S.desk.length){S.phase="end";if(Date.now()>=(S.hurtUntil||0))S.say="수고했어, 오늘은 여기까지야.";S.tab="desk"}
  if(pr&&S.phase!=="over"){S.say=pr;S.back=true;S.hurtUntil=0;TYS={};setTimeout(()=>sfx("star"),520)}
  save();render()}
-function brew(){const p=S.desk.find(x=>x.id===S.sel);if(p&&p.urg)p.stopped=true;playBrew(doBrew)}
+function brew(){if(BA)return;const p=S.desk.find(x=>x.id===S.sel);if(!p||!S.pick.length||!S.pick.every(k=>S.proc[k]))return;if(p.urg)p.stopped=true;playBrew(doBrew)}
 function doBrew(){const p=S.desk.find(x=>x.id===S.sel);if(!p)return;
  if(p.sy.req){S.pick.forEach(k=>S.inv[k]--);S.lives=Math.max(0,S.lives-1);return finish(`<span class="bad">${p.sp.n}은(는) 약이 아니라 약재를 원했다… (${ic("bheart")} 목숨 -1)</span>`)}
  if(p.sy.note!==undefined){S.pick.forEach(k=>S.inv[k]--);S.lives=Math.max(0,S.lives-1);return finish(`<span class="bad">${p.sp.n}에게는 약이 필요 없었다… 약이 소용없었다 (${ic("bheart")} 목숨 -1)</span>`)}
@@ -569,7 +572,10 @@ function draw(){
  $.innerHTML=h}
 document.addEventListener("contextmenu",e=>e.preventDefault());
 ["pointerdown","touchend","click"].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true}));
-document.addEventListener("pointerdown",e=>{const b=e.target.closest&&e.target.closest("button");if(b&&!b.disabled&&!b.closest("#mg")&&!(b.id||"").startsWith("gb_")&&!/toggle(Book|Memo)/.test(b.getAttribute("onclick")||""))sfx("click")},{passive:true});
+document.addEventListener("click",e=>{if(Date.now()<LOCKT&&!(e.target.closest&&e.target.closest("#mg"))){e.stopImmediatePropagation();e.preventDefault()}},true);
+document.addEventListener("pointerdown",()=>{PTRD=true;PTRT=Date.now()},{capture:true,passive:true});
+["pointerup","pointercancel","touchend","touchcancel"].forEach(ev=>document.addEventListener(ev,()=>{PTRD=false},{capture:true,passive:true}));
+document.addEventListener("pointerdown",e=>{const b=e.target.closest&&e.target.closest("button");if(b&&!b.disabled&&Date.now()>=LOCKT&&!b.closest("#mg")&&!(b.id||"").startsWith("gb_")&&!/toggle(Book|Memo)/.test(b.getAttribute("onclick")||""))sfx("click")},{passive:true});
 const BACK="돌아온 건가? 그럼, 일을 재개하자.";let awayAt=0;
 function welcomeBack(){if(S.phase==="over")return;S.hurtUntil=0;TYS={};S.tease=false;S.back=true;S.tapSay=BACK;if(S.phase==="day")S.say=BACK;render()}
 document.addEventListener("visibilitychange",()=>{if(document.hidden){awayAt=Date.now();save()}else if(awayAt){const dt=Date.now()-awayAt;awayAt=0;if(S.phase==="day"){S.desk.forEach(p=>{if(p.urg&&p.t0&&!p.stopped)p.t0+=dt});S.nextAt=Math.max(S.nextAt+dt,Date.now()+3500)}if(dt>=1500)welcomeBack()}});
